@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Death Note Writer</title>
+
+<style>
+@font-face {
+    font-family: "DeathNote";
+    src: url("Deathnote.ttf") format("truetype");
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #101010;
+    color: white;
+    font-family: Georgia, serif;
+    text-align: center;
+    padding: 30px 15px;
+}
+
+h1 {
+    font-family: "DeathNote", Georgia, serif;
+    font-size: 55px;
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #aaa;
+    letter-spacing: 4px;
+    font-size: 11px;
+    margin-bottom: 35px;
+}
+
+.notebook {
+    max-width: 750px;
+    margin: auto;
+    background: #e9dfc7;
+    padding: 35px;
+    border-radius: 4px;
+    box-shadow: 0 8px 30px #000;
+}
+
+textarea {
+    width: 100%;
+    min-height: 350px;
+    resize: vertical;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #211b16;
+    font-family: "DeathNote", Georgia, serif;
+    font-size: 27px;
+    line-height: 1.7;
+}
+
+textarea::placeholder {
+    color: #918875;
+}
+
+button {
+    background: #292929;
+    color: white;
+    border: 1px solid #777;
+    padding: 12px 20px;
+    margin: 12px 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #555;
+}
+
+footer {
+    color: #777;
+    font-size: 11px;
+    margin-top: 25px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>DEATH NOTE</h1>
+<div class="subtitle">PERSONAL WRITING TERMINAL</div>
+
+<div class="notebook">
+    <textarea id="writing"
+    placeholder="Write your words here..."></textarea>
+</div>
+
+<div>
+    <button onclick="downloadImage()">DOWNLOAD PNG</button>
+    <button onclick="saveText()">SAVE WRITING</button>
+    <button onclick="clearText()">CLEAR</button>
+</div>
+
+<footer>
+    YOUR NOTEBOOK. YOUR WORDS.
+</footer>
+
+<script>
+const writing = document.getElementById("writing");
+
+// Automatically load saved writing
+writing.value = localStorage.getItem("deathnoteText") || "";
+
+// Automatically save while typing
+writing.addEventListener("input", () => {
+    localStorage.setItem("deathnoteText", writing.value);
+});
+
+function saveText() {
+    localStorage.setItem("deathnoteText", writing.value);
+    alert("Writing saved!");
+}
+
+function clearText() {
+    if (confirm("Clear your writing?")) {
+        writing.value = "";
+        localStorage.removeItem("deathnoteText");
+    }
+}
+
+async function downloadImage() {
+    await document.fonts.load('27px DeathNote');
+
+    const text = writing.value || " ";
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const padding = 60;
+    const maxWidth = 1400;
+    const lineHeight = 52;
+
+    ctx.font = "27px DeathNote";
+
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = "";
+
+    for (const word of words) {
+        const test = line ? line + " " + word : word;
+
+        if (ctx.measureText(test).width > maxWidth - padding * 2 && line) {
+            lines.push(line);
+            line = word;
+        } else {
+            line = test;
+        }
+    }
+
+    lines.push(line);
+
+    canvas.width = maxWidth;
+    canvas.height = Math.max(400, lines.length * lineHeight + padding * 2);
+
+    ctx.fillStyle = "#e9dfc7";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = "27px DeathNote";
+    ctx.fillStyle = "#211b16";
+    ctx.textBaseline = "top";
+
+    lines.forEach((line, i) => {
+        ctx.fillText(line, padding, padding + i * lineHeight);
+    });
+
+    const link = document.createElement("a");
+    link.download = "deathnote-page.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+</script>
+
+</body>
+</html>
